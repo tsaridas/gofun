@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -15,10 +16,10 @@ type User struct {
 	Age  int    `json:"age"`
 }
 
-var users = make([]User, 20)
+var users = make([]User, 50) // Increased the number of users
 
 func init() {
-	for i := 0; i < 20; i++ {
+	for i := 0; i < len(users); i++ { // Dynamically adjust the loop based on the length of users
 		users[i] = User{Name: "User" + strconv.Itoa(i), Age: rand.Intn(100)}
 	}
 }
@@ -31,6 +32,7 @@ func main() {
 	}))
 	r.GET("/api/users", func(c *gin.Context) {
 		pageStr := c.Query("page")
+		searchQuery := c.Query("search")
 		var page int
 		if pageStr == "" {
 			page = 1
@@ -39,8 +41,9 @@ func main() {
 		}
 		start := (page - 1) * 10
 		end := start + 10
-		if end > 20 {
-			end = 20
+
+		if end > len(users) { // Dynamically adjust the condition to match the current number of users
+			end = len(users)
 		}
 
 		// Ensure start and end are within bounds and start is less than or equal to end
@@ -54,13 +57,26 @@ func main() {
 			start = end // Adjust start to be equal to end if it exceeds
 		}
 
+		// Filter users based on search query
+		var filteredUsers []User
+		for _, user := range users[start:end] {
+			if strings.Contains(strings.ToLower(user.Name), strings.ToLower(searchQuery)) {
+				filteredUsers = append(filteredUsers, user)
+			}
+		}
+
 		// Calculate total pages
 		totalPages := len(users) / 10
 		if len(users)%10 > 0 {
 			totalPages++
 		}
 
-		c.JSON(http.StatusOK, gin.H{"users": users[start:end], "page": page, "total_pages": totalPages})
+		if page > totalPages {
+			c.JSON(http.StatusNotFound, gin.H{"error": "No more pages available"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"users": filteredUsers, "page": page, "total_pages": totalPages})
 	})
 	r.Any("/manifest.json", func(c *gin.Context) {
 		message := "access API at " + time.Now().Format(time.RFC3339)
