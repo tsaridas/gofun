@@ -15,7 +15,7 @@ func main() {
 		// You can customize other options here
 	}))
 	r.Any("/*path", func(c *gin.Context) {
-		message := "Welcome to our API 2 at " + time.Now().Format(time.RFC3339)
+		message := "access API at " + time.Now().Format(time.RFC3339)
 		c.JSON(http.StatusOK, gin.H{"message": message})
 	})
 	r.Run(":3000")

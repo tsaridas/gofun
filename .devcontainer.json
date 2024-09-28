@@ -10,12 +10,10 @@
     "vscode": {
       "extensions": [
         "golang.go",
-        "streetsidesoftware.code-spell-checker",
-        "eamodio.gitlens"
+        "streetsidesoftware.code-spell-checker"
       ]
     }
   },
   "forwardPorts": [8080],
-  "postCreateCommand": "go version",
-  "remoteUser": "vscode"
+  "postCreateCommand": "go install"
 }
