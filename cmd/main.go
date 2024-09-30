@@ -5,9 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/tsaridas/gofun/internal/routes"
+	"github.com/tsaridas/gofun/pkg/models"
 )
 
 func main() {
+	models.InitDB("gofun.db")
 	r := gin.New()
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
