@@ -26,18 +26,17 @@ func init() {
 }
 
 func GetUsers(c *gin.Context) {
-
 	pageStr := c.Query("page")
 	searchQuery := c.Query("search")
-	userLog.LogRequest(c, "PageStr is: %s", string(pageStr))
-	userLog.LogRequest(c, "SearchQuery is: %s", string(searchQuery))
+	userLog.LogRequest(c, "PageStr is: %s", pageStr)
+	userLog.LogRequest(c, "SearchQuery is: %s", searchQuery)
 
-	var page int
-	if pageStr == "" {
-		page = 1
-	} else {
-		page, _ = strconv.Atoi(pageStr)
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
+		return
 	}
+
 	start := (page - 1) * 10
 	end := start + 10
 
@@ -47,12 +46,6 @@ func GetUsers(c *gin.Context) {
 
 	if start < 0 {
 		start = 0
-	}
-	if end > len(users) {
-		end = len(users)
-	}
-	if start > end {
-		start = end
 	}
 
 	var filteredUsers []User
@@ -71,6 +64,7 @@ func GetUsers(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No more pages available"})
 		return
 	}
+
 	userLog.LogRequest(c, "Sending results to client is: %v", filteredUsers)
 
 	c.JSON(http.StatusOK, gin.H{"users": filteredUsers, "page": page, "total_pages": totalPages})

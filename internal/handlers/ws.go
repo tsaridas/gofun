@@ -33,8 +33,16 @@ func WebSocket(c *gin.Context) {
 	clientIP := c.ClientIP()
 	userAgent := c.Request.Header.Get("User-Agent")
 	connectMessage := gin.H{"type": "connect", "ip": clientIP, "userAgent": userAgent}
-	connectJSON, _ := json.Marshal(connectMessage)
-	conn.WriteMessage(websocket.TextMessage, connectJSON)
+	connectJSON, err := json.Marshal(connectMessage)
+	if err != nil {
+		wsLog.LogRequest(c, "Failed to marshal connect message: %v", err)
+		return
+	}
+	err = conn.WriteMessage(websocket.TextMessage, connectJSON)
+	if err != nil {
+		wsLog.LogRequest(c, "Failed to write connect message: %v", err)
+		return
+	}
 
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
@@ -42,7 +50,11 @@ func WebSocket(c *gin.Context) {
 	for range ticker.C {
 		// Generate random data
 		randData := strings.Repeat("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", rand.Intn(5))
-		randDataJSON, _ := json.Marshal(gin.H{"type": "randomData", "data": randData})
+		randDataJSON, err := json.Marshal(gin.H{"type": "randomData", "data": randData})
+		if err != nil {
+			wsLog.LogRequest(c, "Failed to marshal random data: %v", err)
+			return
+		}
 		err = conn.WriteMessage(websocket.TextMessage, randDataJSON)
 		if err != nil {
 			wsLog.LogRequest(c, "Failed to write message: %v", err) // Log when failed to write message
