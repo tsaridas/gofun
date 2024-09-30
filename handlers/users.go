@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tsaridas/gofun/logger"
 )
 
 type User struct {
@@ -23,8 +24,12 @@ func init() {
 }
 
 func GetUsers(c *gin.Context) {
+
 	pageStr := c.Query("page")
 	searchQuery := c.Query("search")
+	logger.LoggerInstance.Println(c, "PageStr is:", string(pageStr))         // Use the logger instance
+	logger.LoggerInstance.Println(c, "searchQuery is:", string(searchQuery)) // Use the logger instance
+
 	var page int
 	if pageStr == "" {
 		page = 1
@@ -67,6 +72,7 @@ func GetUsers(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No more pages available"})
 		return
 	}
+	logger.LoggerInstance.Println(c, "Sending results to client is:", filteredUsers) // Use the logger instance
 
 	c.JSON(http.StatusOK, gin.H{"users": filteredUsers, "page": page, "total_pages": totalPages})
 }

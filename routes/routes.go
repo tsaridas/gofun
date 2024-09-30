@@ -18,6 +18,12 @@ func SetupRoutes(r *gin.Engine) {
 	{
 		manifest.GET("/manifest.json", handlers.GetManifest)
 	}
+
+	ws := r.Group("/ws")
+	{
+		ws.GET("/random", handlers.WebSocket)
+	}
+
 	// Organize routes into groups
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No route found"})
