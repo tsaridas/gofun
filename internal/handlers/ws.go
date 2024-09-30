@@ -9,8 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/tsaridas/gofun/logger"
+	"github.com/tsaridas/gofun/internal/logger"
 )
+
+var wsLog = logger.NewLogger()
 
 func WebSocket(c *gin.Context) {
 	upgrader := websocket.Upgrader{
@@ -43,9 +45,9 @@ func WebSocket(c *gin.Context) {
 		randDataJSON, _ := json.Marshal(gin.H{"type": "randomData", "data": randData})
 		err = conn.WriteMessage(websocket.TextMessage, randDataJSON)
 		if err != nil {
-			logger.LoggerInstance.Println(c, "Failed to write message:", err) // Log when failed to write message
+			wsLog.LogRequest(c, "Failed to write message: %v", err) // Log when failed to write message
 			return
 		}
-		logger.LoggerInstance.Println(c, "Data sent to client:", string(randDataJSON)) // Use the logger instance
+		wsLog.LogRequest(c, "Data sent to client: %v", randDataJSON) // Use the logger instance
 	}
 }

@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/tsaridas/gofun/handlers"
+	"github.com/tsaridas/gofun/internal/handlers"
+	"github.com/tsaridas/gofun/internal/middleware"
 )
 
 func SetupRoutes(r *gin.Engine) {
-
-	api := r.Group("/api") // {{ edit_1 }}
+	r.Use(middleware.UUIDMiddleware())
+	api := r.Group("/api")
 	{
 		api.GET("/users", handlers.GetUsers)
 
@@ -28,4 +29,5 @@ func SetupRoutes(r *gin.Engine) {
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No route found"})
 	})
+
 }
